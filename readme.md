@@ -8,7 +8,7 @@ windows 下启动Docker-Desktop后，进入爬虫根目录,运行命令
     docker ps -a
 
 看到服务启动即可
-![Image discription]()
+![Image discription](https://raw.githubusercontent.com/Flyits/car_spider/master/docker_container.jpg)
 
 ### 爬虫运行
 1. docker环境启动之后，在Pycharm中配置python解释器（docker-compose),运行car/main.py
