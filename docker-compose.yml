@@ -1,0 +1,53 @@
+version: "3.5"
+
+services:
+  car_spider:
+    container_name: car_spider
+    build: .
+    volumes:
+      - '/d/code/python/car:/workspace'
+    networks:
+        normal:
+          aliases:
+            - master
+
+  car_node_chrome:
+    image: selenium/node-chrome
+    networks:
+      normal:
+        aliases:
+           - car_node_chrome
+    environment:
+      HUB_HOST: selenium-hub
+    volumes:
+    - '/d/car/shm:/dev/shm'
+  car_mysql:
+    container_name: car_mysql
+    image: mysql:5.7
+    expose:
+      - 3306
+    networks:
+        normal:
+          aliases:
+            - car_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - '/d/code/python/car/mysql:/var/lib/mysql'
+    ports:
+      - 3306:3306
+
+  car_selenium_hub:
+    container_name: selenium-hub
+    image: selenium/hub
+    expose:
+      - 4444
+    networks:
+        normal:
+          aliases:
+            - car_selenium_hub
+    ports:
+      - '32768:4444'
+networks:
+  normal:
+    driver: bridge
