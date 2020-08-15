@@ -3,6 +3,7 @@ version: "3.5"
 services:
   car_spider:
     container_name: car_spider
+    image: car_spider-1.0
     build: .
     volumes:
       - '/d/code/python/car:/workspace'
@@ -21,6 +22,7 @@ services:
       HUB_HOST: selenium-hub
     volumes:
     - '/d/car/shm:/dev/shm'
+
   car_mysql:
     container_name: car_mysql
     image: mysql:5.7
@@ -48,6 +50,16 @@ services:
             - car_selenium_hub
     ports:
       - '32768:4444'
+
+  car_redis:
+    container_name: redis
+    image: redis
+    expose:
+      - 6379
+    networks:
+        normal:
+          aliases:
+            - car_redis
 networks:
   normal:
     driver: bridge

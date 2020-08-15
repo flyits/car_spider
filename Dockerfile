@@ -6,6 +6,7 @@ RUN pip install scrapy \
     && cd /workspace \
     && scrapy startproject car \
     && pip install selenium \
+    && pip install urlparse \
     && pip install scrapy_selenium \
     && pip install scrapy_splash \
     && pip install PyMySQL \

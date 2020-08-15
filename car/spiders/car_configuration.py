@@ -1,6 +1,7 @@
 # _*_ coding: utf-8 _*_
 import scrapy
 import json
+from urllib import parse
 from car.items import CarBrandItem
 from car.items import CarBrandModelItem
 from car.items import CarBrandModelVersionItem
@@ -16,7 +17,7 @@ class CarConfiguration(scrapy.Spider):
         print('car_config running...')
         urls = ['http://car.m.yiche.com/']
         # 调试配置抓取，需设置callback为对应处理方法
-        # urls = ['http://car.m.yiche.com/aodiq2haiwai/m139469/peizhi/']
+        # urls = ['http://car.m.yiche.com/aodiq2haiwai/m139467/peizhi/?version_id=0']
         # 调试图片抓取，需设置callback为对应处理方法
         # urls = ['http://photo.m.yiche.com/car/120422//']
         for url in urls:
@@ -45,17 +46,17 @@ class CarConfiguration(scrapy.Spider):
                 count += 1
                 print(brand_item)
                 if url and self.black_list(url):
-                    yield scrapy.Request(url=base_url + url, callback=self.model,
-                                         cb_kwargs={'brand_id': brand_item['id']})
-        print(count)
+                    yield scrapy.Request(url=base_url + url + '?brand_id=' + str(brand_item['id']), callback=self.model)
+        # print(count)
 
-    def model(self, response, brand_id):
+    def model(self, response):
+        brand_id = parse.parse_qs(parse.urlparse(response.url).query)['brand_id'][0]
         model_item = CarBrandModelItem()
         # 获取车系列表
         for model_list in response.xpath("//div[@class='brand-list']"):
             model_item['table_name'] = 'car_model'
             model_item['brand_id'] = brand_id
-            model_item['brand_sub_name'] = model_list.xpath(".//div[@class='brand-name']/text()").extract_first()
+            model_item['sub_brand_name'] = model_list.xpath(".//div[@class='brand-name']/text()").extract_first()
             for car_list in model_list.xpath(".//div[@class='brand-car']"):
                 model_item['name'] = car_list.xpath(".//div[@class='car-name']/text()").extract_first().strip()
                 model_item['cover_img'] = car_list.xpath(".//img/@data-original").extract_first()
@@ -64,10 +65,11 @@ class CarConfiguration(scrapy.Spider):
                 print(model_item)
 
                 if url and self.black_list(url):
-                    yield scrapy.Request(url=base_url + url, callback=self.version,
-                                         cb_kwargs={'model_id': model_item['id']})
+                    yield scrapy.Request(url=base_url + url + '?model_id=' + str(model_item['id']),
+                                         callback=self.version)
 
-    def version(self, response, model_id):
+    def version(self, response):
+        model_id = parse.parse_qs(parse.urlparse(response.url).query)['model_id'][0]
         # 获取车型版本列表
         version_item = CarBrandModelVersionItem()
         for version in response.xpath("//div[@class='c-style-inner']"):
@@ -79,20 +81,21 @@ class CarConfiguration(scrapy.Spider):
             print(version_item)
 
             if url and self.black_list(url):
-                yield scrapy.Request(url=base_url + url, callback=self.config,
-                                     cb_kwargs={'version_id': version_item['id']})
+                yield scrapy.Request(url=base_url + url + '?version_id=' + str(version_item['id']),
+                                     callback=self.config)
 
-    def config(self, response, version_id):
-
+    def config(self, response):
+        version_id = parse.parse_qs(parse.urlparse(response.url).query)['version_id'][0]
+        version_item = CarBrandModelVersionItem()
         config_item = []
         sub_config = {}
         for config in response.xpath("//tr"):
             # 判断当前元素是否 子配置名 如：基本信息、车身尺寸等
             if config.xpath('./@id').extract_first():
-                print(sub_config)
                 # 判断当前子配置是否已经爬取完成，完成写入主配置
                 if sub_config:
                     config_item.append(sub_config)
+                    print(sub_config)
                 # 初始化子配置
                 sub_config = {'name': config.xpath('.//span/text()').extract_first(), 'sub_config': []}
             else:
@@ -119,7 +122,7 @@ class CarConfiguration(scrapy.Spider):
                     'value': value
                 })
         if config_item:
-            version_item = CarBrandModelVersionItem()
+
             version_item['table_name'] = 'car_version'
             version_item['id'] = version_id
             version_item['config'] = json.dumps(config_item, ensure_ascii=False)
@@ -153,6 +156,7 @@ class CarConfiguration(scrapy.Spider):
             yield version_item
             print(images)
 
+    # 黑名单url
     def black_list(self, url):
         black_url_list = [
             '/sikedavisionin/'

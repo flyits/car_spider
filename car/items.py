@@ -19,7 +19,7 @@ class CarBrandItem(scrapy.Item):
 class CarBrandModelItem(scrapy.Item):
     table_name = scrapy.Field()
     id = scrapy.Field()
-    brand_sub_name = scrapy.Field()
+    sub_brand_name = scrapy.Field()
     brand_id = scrapy.Field()
     name = scrapy.Field()
     cover_img = scrapy.Field()
