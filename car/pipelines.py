@@ -85,7 +85,7 @@ class CarPipeline:
                 item['id'] = cursor.lastrowid
             else:
                 item['id'] = id['id']
-            self.conn.commit()
+        self.conn.commit()
 
     def handle_error(self, failure):
         # 打印错误信息

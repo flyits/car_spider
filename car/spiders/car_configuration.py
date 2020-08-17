@@ -1,6 +1,7 @@
 # _*_ coding: utf-8 _*_
 import scrapy
 import json
+import random
 from urllib import parse
 from car.items import CarBrandItem
 from car.items import CarBrandModelItem
@@ -18,6 +19,8 @@ class CarConfiguration(scrapy.Spider):
         urls = ['http://car.m.yiche.com/']
         # 调试配置抓取，需设置callback为对应处理方法
         # urls = ['http://car.m.yiche.com/aodiq2haiwai/m139467/peizhi/?version_id=0']
+        # 调试配置抓取，需设置callback为对应处理方法
+        # urls = ['http://car.m.yiche.com/aodiq2haiwai/?model_id=1']
         # 调试图片抓取，需设置callback为对应处理方法
         # urls = ['http://photo.m.yiche.com/car/120422//']
         for url in urls:
@@ -122,7 +125,6 @@ class CarConfiguration(scrapy.Spider):
                     'value': value
                 })
         if config_item:
-
             version_item['table_name'] = 'car_version'
             version_item['id'] = version_id
             version_item['config'] = json.dumps(config_item, ensure_ascii=False)
@@ -131,7 +133,7 @@ class CarConfiguration(scrapy.Spider):
         if images_url:
             yield scrapy.Request(url='http:' + images_url, callback=self.images, cb_kwargs={'version_id': version_id})
 
-    # print(config_item)
+        # print(config_item)
 
     def images(self, response, version_id):
         images = []
@@ -140,21 +142,27 @@ class CarConfiguration(scrapy.Spider):
                 more_images = title.xpath('.//a/@href').extract_first()
                 # 是否有更多图片，否则直接爬取当前页面上的官方图片
                 if more_images:
-                    yield scrapy.Request(url=img_base_url + more_images,
-                                         callback=self.images, cb_kwargs={'version_id': version_id})
+                    yield scrapy.Request(url=img_base_url + more_images, dont_filter=True, callback=self.more_images,
+                                         cb_kwargs={'version_id': version_id})
                 else:
                     for image in response.xpath("//div[@class='pic-select-car'][last()]//ul//li"):
                         images.append(image.xpath('.//img/@src').extract_first())
+                    yield self.insert_images(images, version_id)
 
+    def more_images(self, response, version_id):
+        images = []
         for image in response.xpath("//ul[@class='ul-list']//li"):
             images.append(image.xpath('.//img/@src').extract_first())
+        yield self.insert_images(images, version_id)
+
+    def insert_images(self, images, version_id):
         if images:
             version_item = CarBrandModelVersionItem()
             version_item['table_name'] = 'car_version'
             version_item['id'] = version_id
             version_item['images'] = json.dumps(images)
-            yield version_item
-            print(images)
+            print(version_item)
+            return version_item
 
     # 黑名单url
     def black_list(self, url):
