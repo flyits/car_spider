@@ -1,4 +1,4 @@
-version: "3.5"
+version: "3.7"
 
 services:
   car_spider:
@@ -37,7 +37,7 @@ services:
     volumes:
       - '/d/code/python/car/mysql:/var/lib/mysql'
     ports:
-      - 3306:3306
+      - 3307:3306
 
   car_selenium_hub:
     container_name: selenium-hub

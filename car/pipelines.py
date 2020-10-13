@@ -59,33 +59,57 @@ class CarPipeline:
             item['id'] = id['id']
 
     def car_model(self, cursor, item):
-        cursor.execute("""SELECT id FROM car_model WHERE `name` = '%s'""" % (item['name']))
-        id = cursor.fetchone()
-        if id is None:
-            insert_sql = """insert into car_model(`name`,`sub_brand_name`,`brand_id`,`cover_img`) VALUES(%s,%s,%s,%s)"""
-            cursor.execute(insert_sql, (item['name'], item['sub_brand_name'], item['brand_id'], item['cover_img']))
-            item['id'] = cursor.lastrowid
+
+        if 'car_price' in item:
+            sql = """UPDATE car_model SET `guid_price`=%s,`car_price`=%s,`car_type`=%s where id=%s"""
+            cursor.execute(sql, (item['guid_price'], item['car_price'], item['car_type'], item['id']))
             self.conn.commit()
-        else:
-            item['id'] = id['id']
+        if 'name' in item:
+            cursor.execute(
+                """SELECT id FROM car_model WHERE `name` = '%s' and `brand_id` = %s""" % (
+                    item['name'], item['brand_id']))
+            id = cursor.fetchone()
+            if id is None:
+                insert_sql = """insert into car_model(`name`,`sub_brand_name`,`brand_id`,`cover_img`) VALUES(%s,%s,%s,%s)"""
+                cursor.execute(insert_sql, (item['name'], item['sub_brand_name'], item['brand_id'], item['cover_img']))
+                item['id'] = cursor.lastrowid
+                self.conn.commit()
+            else:
+                item['id'] = id['id']
 
     def car_version(self, cursor, item):
         if 'images' in item:
             sql = """UPDATE car_version SET `images`=%s where id=%s"""
             cursor.execute(sql, (item['images'], item['id']))
-        if 'config' in item:
-            sql = """UPDATE car_version SET `config`=%s where id=%s"""
-            cursor.execute(sql, (item['config'], item['id']))
+            self.conn.commit()
+        # if 'param_config' in item:
+        #     sql = """UPDATE car_version SET `config`=%s where id=%s"""
+        #     cursor.execute(sql, (item['config'], item['id']))
+        # if 'classify' in item:
+        #     sql = """UPDATE car_version SET `classify`=%s,`style_year`=%s where id=%s"""
+        #     cursor.execute(sql, (item['classify'], item['style_year'], item['id']))
         if 'name' in item:
-            cursor.execute("""SELECT id FROM car_version WHERE `name` = '%s' and `model_id` = %s""" % (item['name'], item['model_id']))
+            cursor.execute("""SELECT id FROM car_version WHERE `name` = '%s' and `brand_model_id` = %s""" % (
+                item['name'], item['brand_model_id']))
             id = cursor.fetchone()
             if id is None:
-                sql = """insert into car_version(`name`,`model_id`) VALUES(%s,%s)"""
-                cursor.execute(sql, (item['name'], item['model_id']))
+                sql = """insert into car_version(`name`,`brand_id`, `brand_model_id`, `classify`, `style_year`,
+                `category_type_id`,`energy_type_id`, `engine_type_id`, `gearbox_type_id`,
+                 `drive_way_type_id`,`official_price`, `xb_perk_price`,  `return_points_price`, 
+                  `displacements`,`standard_type_id`,  `horsepower`,  `param_config`,`spider_url`
+                ) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+                cursor.execute(sql, (
+                    item['name'], item['brand_id'], item['brand_model_id'], item['classify'], item['style_year'],
+                    item['category_type_id'], item['energy_type_id'], item['engine_type_id'],
+                    item['gearbox_type_id'], item['drive_way_type_id'],
+                    item['official_price'], item['xb_perk_price'], item['return_points_price'],
+                    item['displacements'], item['standard_type_id'], item['horsepower'], item['param_config'],
+                    item['spider_url']
+                ))
                 item['id'] = cursor.lastrowid
+                self.conn.commit()
             else:
                 item['id'] = id['id']
-        self.conn.commit()
 
     def handle_error(self, failure):
         # 打印错误信息
