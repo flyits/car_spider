@@ -9,7 +9,7 @@ from car.items import CarBrandModelVersionItem
 from car.types import Types
 
 base_url = 'http://car.m.yiche.com'
-img_base_url = 'http://photo.m.yiche.com'
+img_base_url = 'http://photo.m.yiche.com/car/'
 
 
 class CarConfiguration(scrapy.Spider):
@@ -22,12 +22,13 @@ class CarConfiguration(scrapy.Spider):
         # 调试配置抓取，需设置callback为对应处理方法
         # urls = ['http://car.m.yiche.com/aodiq2haiwai/m139467/peizhi/?version_id=0']
         # 调试配置抓取，需设置callback为对应处理方法
-        # urls = ['https://car.m.yiche.com/maxusv80/?brand_model_id=1&brand_id=1']
+        # urls = ['http://car.m.yiche.com/audi/?brand_id=1']
         # 调试图片抓取，需设置callback为对应处理方法
         # urls = ['http://photo.m.yiche.com/car/120422/']
+        # urls = [            'http://car.m.yiche.com/kaiyunzhaiti/m142389/peizhi?table_name=car_version&brand_id=124&brand_model_id=2137&name=2020%E6%AC%BE+%E5%B0%8F%E5%8D%A1+2.8T+%E6%89%8B%E5%8A%A8+3.7%E7%B1%B3%E5%8D%95%E6%8E%92%E6%A0%8F%E6%9D%BF%E8%BD%BB%E5%8D%A1JX1041TCA25&classify=2.8T%2F85kW+%E6%B6%A1%E8%BD%AE%E5%A2%9E%E5%8E%8B&style_year=2020']
         # 调试图片抓取，需设置callback为对应处理方法
         # urls = [
-        #     'http://car.m.yiche.com/yufenga100/m129883/peizhi?table_name=car_version&brand_id=65&brand_model_id=352&name=2018%E6%AC%BE+A100+3.0T+%E6%89%8B%E5%8A%A8+%E8%BD%BD%E5%AE%A250M+ZD30+%E9%AB%98%E9%85%8D%E7%89%88+12%E5%BA%A7&classify=%E5%8F%82%E9%85%8D%E6%9C%AA%E5%85%AC%E5%B8%83&style_year=2020']
+        #     'http://car.m.yiche.com/cc-2932/m134335/peizhi?table_name=car_version&brand_id=53&brand_model_id=1751&name=2019%E6%AC%BE+380TSI+%E5%8F%8C%E7%A6%BB%E5%90%88+%E9%AD%85%E9%A2%9C%E7%89%88+%E5%9B%BDVI&classify=2.0T%2F162kW+%E6%B6%A1%E8%BD%AE%E5%A2%9E%E5%8E%8B&style_year=2019']
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
@@ -62,16 +63,17 @@ class CarConfiguration(scrapy.Spider):
         brand_id = parse.parse_qs(parse.urlparse(response.url).query)['brand_id'][0]
         model_item = CarBrandModelItem()
         # 获取车系列表
-        for model_list in response.xpath("//div[@class='brand-list']"):
+        for model_list in response.xpath("//div[@class='brand-list']/div[@class='brand-item']"):
             model_item['table_name'] = 'car_model'
             model_item['brand_id'] = brand_id
             model_item['sub_brand_name'] = model_list.xpath(".//div[@class='brand-name']/text()").extract_first()
-            for car_list in model_list.xpath(".//div[@class='brand-car']"):
+            for car_list in model_list.xpath(".//div[@class='brand-car']/a"):
                 model_item['name'] = car_list.xpath(".//div[@class='car-name']/text()").extract_first().strip()
                 model_item['cover_img'] = car_list.xpath(".//img/@data-original").extract_first().replace('_4.', '_8.')
-                url = car_list.xpath(".//a/@href").extract_first()
+                url = car_list.xpath("./@href").extract_first()
                 yield model_item
-                # print(model_item)
+                print(model_item)
+                # print(model_item['name'])
 
                 if url and self.black_list(url):
                     url = base_url + url + '?brand_model_id=' + str(model_item['id']) + '&brand_id=' + str(brand_id)
@@ -117,11 +119,10 @@ class CarConfiguration(scrapy.Spider):
                 version_item['classify'] = classify
                 version_item['style_year'] = version_list.xpath(
                     ".//div[@class='compare-box']/@data-year").extract_first()
-                print(version_item)
                 if url and self.black_list(url):
                     url = base_url + url + '?' + parse.urlencode(version_item)
-                    # yield scrapy.Request(url=url.replace('/?', '?'),
-                    #                      callback=self.config)
+                    yield scrapy.Request(url=url.replace('/?', '?'),
+                                         callback=self.config)
 
     def config(self, response):
         version_item = CarBrandModelVersionItem()
@@ -186,16 +187,19 @@ class CarConfiguration(scrapy.Spider):
             # 检测循环结束，写入主配置
             if i + 1 == configsLength and sub_config:
                 config_item.append(sub_config)
-        print(config_item)
         if config_item:
             version_item['param_config'] = json.dumps(config_item, ensure_ascii=False)
+
+        configUrl = response.url
+        carId = configUrl[configUrl.rfind('/m') + 2: configUrl.find('/peizhi')]
+        images_url = img_base_url + str(carId)
+        print(images_url)
         yield version_item
 
-        images_url = response.xpath('//*[@id="container"]/div[1]/div[3]/ul/li[4]/a/@href').extract_first()
         if images_url:
-        yield scrapy.Request(url='http:' + images_url, callback=self.images,
-                             cb_kwargs={'version_id': version_item['id']})
-
+            yield scrapy.Request(url=images_url, callback=self.images,
+                                 cb_kwargs={'version_id': version_item['id']})
+        #
         # print(config_item)
 
     def images(self, response, version_id):
@@ -205,7 +209,8 @@ class CarConfiguration(scrapy.Spider):
                 more_images = title.xpath('.//a/@href').extract_first()
                 # 是否有更多图片，否则直接爬取当前页面上的官方图片
                 if more_images:
-                    yield scrapy.Request(url=img_base_url + more_images, dont_filter=True, callback=self.more_images,
+                    url = 'http://photo.m.yiche.com' + more_images
+                    yield scrapy.Request(url=url, dont_filter=True, callback=self.more_images,
                                          cb_kwargs={'version_id': version_id})
                 else:
                     for image in response.xpath("//div[@class='pic-select-car'][last()]//ul//li"):
@@ -221,6 +226,7 @@ class CarConfiguration(scrapy.Spider):
 
     def insert_images(self, images, version_id):
         if images:
+            print(images)
             version_item = CarBrandModelVersionItem()
             version_item['table_name'] = 'car_version'
             version_item['id'] = version_id
