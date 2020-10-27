@@ -11,6 +11,12 @@ services:
         normal:
           aliases:
             - master
+    command:
+      - /bin/sh
+      - -c
+      - |
+          cd /workspace/car
+          python3 main.py
 
   car_node_chrome:
     image: selenium/node-chrome
