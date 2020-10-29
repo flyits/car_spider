@@ -130,13 +130,13 @@ class Types:
         if name == '变速箱类型':
             value = value[value.find(' ') + 1:]
             version_item['gearbox_type_id'] = self.typeList[self.GEARBOX_TYPE][value]
-        if name == '排气量':
+        if name == '排气量' or name == '排量[mL]':
             version_item['displacements'] = value
         if name == '环保标准':
             version_item['standard_type_id'] = self.typeList[self.STANDARD_TYPE][value]
-        if name == '最大马力':
+        if name == '最大马力' or name == '最大马力[Ps]':
             version_item['horsepower'] = value
-        if name == '驱动方式':
+        if name == '驱动方式' or name == '驱动形式':
             if value.find('x') != -1:
                 value = '后轮驱动'
             version_item['drive_way_type_id'] = self.typeList[self.DRIVE_WAY_TYPE][value]

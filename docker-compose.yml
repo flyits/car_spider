@@ -8,9 +8,9 @@ services:
     volumes:
       - '/d/code/python/car:/workspace'
     networks:
-        normal:
-          aliases:
-            - master
+      normal:
+        aliases:
+          - master
     command:
       - /bin/sh
       - -c
@@ -23,11 +23,11 @@ services:
     networks:
       normal:
         aliases:
-           - car_node_chrome
+          - car_node_chrome
     environment:
       HUB_HOST: selenium-hub
     volumes:
-    - '/d/car/shm:/dev/shm'
+      - '/d/car/shm:/dev/shm'
 
   car_mysql:
     container_name: car_mysql
@@ -35,9 +35,9 @@ services:
     expose:
       - 3306
     networks:
-        normal:
-          aliases:
-            - car_mysql
+      normal:
+        aliases:
+          - car_mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
@@ -51,9 +51,9 @@ services:
     expose:
       - 4444
     networks:
-        normal:
-          aliases:
-            - car_selenium_hub
+      normal:
+        aliases:
+          - car_selenium_hub
     ports:
       - '32768:4444'
 
@@ -63,9 +63,9 @@ services:
     expose:
       - 6379
     networks:
-        normal:
-          aliases:
-            - car_redis
+      normal:
+        aliases:
+          - car_redis
 networks:
   normal:
     driver: bridge

@@ -42,7 +42,7 @@ class CarPipeline:
         # 车系数据
         if item['table_name'] == 'car_model':
             self.car_model(cursor=cursor, item=item)
-        # 图片数据
+        # 车型数据
         if item['table_name'] == 'car_version':
             self.car_version(cursor=cursor, item=item)
         return item
@@ -82,9 +82,17 @@ class CarPipeline:
             sql = """UPDATE car_version SET `images`=%s where id=%s"""
             cursor.execute(sql, (item['images'], item['id']))
             self.conn.commit()
-        # if 'param_config' in item:
-        #     sql = """UPDATE car_version SET `config`=%s where id=%s"""
-        #     cursor.execute(sql, (item['config'], item['id']))
+        if 'param_config' in item:
+            sql = """UPDATE car_version SET `param_config`=%s,`category_type_id`=%s,`energy_type_id`=%s, `engine_type_id`=%s,
+             `gearbox_type_id`=%s,`drive_way_type_id`=%s,`official_price`=%s, `xb_perk_price`=%s,  `return_points_price`=%s, 
+                  `displacements`=%s,`standard_type_id`=%s,  `horsepower`=%s
+                 where id=%s"""
+            cursor.execute(sql, (
+                item['param_config'], item['category_type_id'], item['energy_type_id'], item['engine_type_id'],
+                item['gearbox_type_id'], item['drive_way_type_id'], item['official_price'], item['xb_perk_price'],
+                item['return_points_price'],
+                item['displacements'], item['standard_type_id'], item['horsepower'], item['id']))
+            self.conn.commit()
         # if 'classify' in item:
         #     sql = """UPDATE car_version SET `classify`=%s,`style_year`=%s where id=%s"""
         #     cursor.execute(sql, (item['classify'], item['style_year'], item['id']))

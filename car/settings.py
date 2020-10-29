@@ -8,12 +8,12 @@
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 # 原爬取PC站点需要用chromeDrive来渲染js之后才能获取元素dom
-# from shutil import which
+from shutil import which
 #
-# SELENIUM_DRIVER_NAME = 'chrome'
-# SELENIUM_DRIVER_EXECUTABLE_PATH = which('chrome')
-# SELENIUM_COMMAND_EXECUTOR = 'http://car_selenium_hub:4444/wd/hub'
-# SELENIUM_DRIVER_ARGUMENTS = ['--headless']  # '--headless' if using chrome instead of firefox
+SELENIUM_DRIVER_NAME = 'chrome'
+SELENIUM_DRIVER_EXECUTABLE_PATH = which('chrome')
+SELENIUM_COMMAND_EXECUTOR = 'http://car_selenium_hub:4444/wd/hub'
+SELENIUM_DRIVER_ARGUMENTS = ['--headless']  # '--headless' if using chrome instead of firefox
 
 BOT_NAME = 'car'
 
@@ -63,7 +63,7 @@ SPIDER_MIDDLEWARES = {
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'car.middlewares.CarDownloaderMiddleware': 543,
-    # 'scrapy_selenium.SeleniumMiddleware': 800
+    'scrapy_selenium.SeleniumMiddleware': 800
 }
 
 # Enable or disable extensions

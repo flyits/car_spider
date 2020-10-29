@@ -14,6 +14,8 @@ RUN mkdir /workspace && cd /workspace \
     && pip install scrapy -i $ALIYUN_SOURCE\
     && pip install scrapy_splash -i $ALIYUN_SOURCE\
     && pip install pymysql -i $ALIYUN_SOURCE \
+    && pip install chompjs -i $ALIYUN_SOURCE \
+    && pip install js2xml -i $ALIYUN_SOURCE \
     && scrapy startproject car
 
 VOLUME /workspace
