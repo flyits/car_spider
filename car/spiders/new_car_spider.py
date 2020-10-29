@@ -12,24 +12,8 @@ class CarSpider(scrapy.Spider):
     name = 'car_spider'
 
     def start_requests(self):
-        db = pymysql.connect("car_mysql", "root", "root", "car_spider")
 
-        # 使用 cursor() 方法创建一个游标对象 cursor
-        cursor = db.cursor()
-
-        # 使用 execute()  方法执行 SQL 查询
-        cursor.execute("SELECT spider_url,id FROM `car_version` WHERE param_config = '' ")
-
-        # 使用 fetchone() 方法获取全部数据.
-        data = cursor.fetchall()
-        urls = []
-        for url in data:
-            id = url[1]
-            url = url[0][:url[0].find('?')] + '?id=' + str(id)
-
-            urls.append(url)
-        # 关闭数据库连接
-        db.close()
+        urls = self.getUrlList()
         # urls = ['http://car.m.yiche.com/hafum4/m115390/peizhi?id=52496', ]
         # 'http://car.m.yiche.com/v8vantage/m116823/peizhi?table_name=car_version&brand_id=3&brand_model_id=3&name=2016%E6%AC%BE+4.7L+Coupe&classify=4.7L%2F313kW+%E8%87%AA%E7%84%B6%E5%90%B8%E6%B0%94&style_year=2016']
         for url in urls:
@@ -55,12 +39,13 @@ class CarSpider(scrapy.Spider):
 
         config = []
         configName = response.xpath("//div[@id='content-iscoll']/div/div/@data-flag").extract_first()
-        self.subConfig(configName, response.xpath("//div[@id='content-iscoll']/div/div/*"), config,
-                       version_item)
+        config = self.subConfig(configName, response.xpath("//div[@id='content-iscoll']/div/div/*"), config,
+                                version_item)
         version_item['param_config'] = json.dumps(config, ensure_ascii=False)
 
+        print(response.url)
         print(version_item)
-        yield version_item
+        # yield version_item
 
     def subConfig(self, configName, configList, config, version_item):
         sub_config = {'name': configName, 'sub_config': []}
@@ -74,8 +59,9 @@ class CarSpider(scrapy.Spider):
                     if subConfig.xpath("./td/@class").extract_first().find("color-box") != -1:
                         subConfigValue = []
                         for item in subConfig.xpath(".//i"):
-                            subConfigValue.append(
-                                item.xpath("./@style").extract_first().replace("background-color:", ""))
+                            color = item.xpath("./@style").extract_first()
+                            start = color.rfind("background-color:") + 17
+                            subConfigValue.append(color[start:start + 7])
                     else:
                         subConfigValue = subConfig.xpath(".//span/text()").extract_first().strip()
                     sub_config['sub_config'].append({"name": subConfigName, "value": subConfigValue})
@@ -85,3 +71,24 @@ class CarSpider(scrapy.Spider):
                 # 易车改版后dom结构非并列，而是层级递进，需递归遍历抓取子配置
                 self.subConfig(configName, value.xpath('./*'), config, version_item)
         return config
+
+    def getUrlList(self):
+        db = pymysql.connect("car_mysql", "root", "root", "car_spider")
+
+        # 使用 cursor() 方法创建一个游标对象 cursor
+        cursor = db.cursor()
+
+        # 使用 execute()  方法执行 SQL 查询
+        cursor.execute("SELECT spider_url,id FROM `car_version` WHERE param_config = '' or param_config = '[]'")
+
+        # 使用 fetchone() 方法获取全部数据.
+        data = cursor.fetchall()
+        urls = []
+        for url in data:
+            id = url[1]
+            url = url[0][:url[0].find('?')] + '?id=' + str(id)
+
+            urls.append(url)
+        # 关闭数据库连接
+        db.close()
+        return urls

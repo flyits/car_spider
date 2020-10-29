@@ -119,27 +119,30 @@ class Types:
 
     def getTypeId(self, version_item=None, name=None, value=None):
 
-        if name == '车身型式':
+        if name == '车身型式' and value in self.typeList[self.CATEGORY_TYPE]:
             version_item['category_type_id'] = self.typeList[self.CATEGORY_TYPE][value]
-        if name == '车型级别' and version_item['category_type_id'] == 0 and value.find('SUV') != -1:
+        if name == '车型级别' and version_item['category_type_id'] == 0 and value.find('SUV') != -1 and value in \
+                self.typeList[self.CATEGORY_TYPE]:
             version_item['category_type_id'] = self.typeList[self.CATEGORY_TYPE]['SUV']
-        if name == '动力类型':
+        if name == '动力类型' and value in self.typeList[self.ENERGY_TYPE]:
             version_item['energy_type_id'] = self.typeList[self.ENERGY_TYPE][value]
-        if name == '进气形式':
+        if name == '进气形式' and value in self.typeList[self.ENGINE_TYPE]:
             version_item['engine_type_id'] = self.typeList[self.ENGINE_TYPE][value]
         if name == '变速箱类型':
             value = value[value.find(' ') + 1:]
-            version_item['gearbox_type_id'] = self.typeList[self.GEARBOX_TYPE][value]
+            if value in self.typeList[self.GEARBOX_TYPE]:
+                version_item['gearbox_type_id'] = self.typeList[self.GEARBOX_TYPE][value]
         if name == '排气量' or name == '排量[mL]':
             version_item['displacements'] = value
-        if name == '环保标准':
+        if name == '环保标准' and value in self.typeList[self.STANDARD_TYPE]:
             version_item['standard_type_id'] = self.typeList[self.STANDARD_TYPE][value]
         if name == '最大马力' or name == '最大马力[Ps]':
             version_item['horsepower'] = value
         if name == '驱动方式' or name == '驱动形式':
             if value.find('x') != -1:
                 value = '后轮驱动'
-            version_item['drive_way_type_id'] = self.typeList[self.DRIVE_WAY_TYPE][value]
+            if value in self.typeList[self.DRIVE_WAY_TYPE]:
+                version_item['drive_way_type_id'] = self.typeList[self.DRIVE_WAY_TYPE][value]
         if name == '厂商指导价':
             if value == '-':
                 value = 0
