@@ -14,7 +14,7 @@ class CarSpider(scrapy.Spider):
     def start_requests(self):
 
         urls = self.getUrlList()
-        # urls = ['http://car.m.yiche.com/hafum4/m115390/peizhi?id=52496', ]
+        # urls = ['http://car.m.yiche.com/lifan620/m102576/peizhi?id=1145', ]
         # 'http://car.m.yiche.com/v8vantage/m116823/peizhi?table_name=car_version&brand_id=3&brand_model_id=3&name=2016%E6%AC%BE+4.7L+Coupe&classify=4.7L%2F313kW+%E8%87%AA%E7%84%B6%E5%90%B8%E6%B0%94&style_year=2016']
         for url in urls:
             yield SeleniumRequest(url=url, callback=self.parse)
@@ -43,9 +43,13 @@ class CarSpider(scrapy.Spider):
                                 version_item)
         version_item['param_config'] = json.dumps(config, ensure_ascii=False)
 
+        if version_item['param_config'] == '[]':
+            print('----------------------------------------')
+            print("重新爬取：" + response.url)
+            yield SeleniumRequest(url=response.url, callback=self.parse)
         print(response.url)
         print(version_item)
-        # yield version_item
+        yield version_item
 
     def subConfig(self, configName, configList, config, version_item):
         sub_config = {'name': configName, 'sub_config': []}
@@ -69,6 +73,7 @@ class CarSpider(scrapy.Spider):
                 config.append(sub_config)
             if configName:
                 # 易车改版后dom结构非并列，而是层级递进，需递归遍历抓取子配置
+                print(config)
                 self.subConfig(configName, value.xpath('./*'), config, version_item)
         return config
 
