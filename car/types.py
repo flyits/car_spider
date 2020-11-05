@@ -138,7 +138,7 @@ class Types:
             version_item['standard_type_id'] = self.typeList[self.STANDARD_TYPE][value]
         if name == '最大马力' or name == '最大马力[Ps]':
             version_item['horsepower'] = value
-        if name == '驱动方式' or name == '驱动形式':
+        if name == '驱动方式' or name == 'displacements':
             if value.find('x') != -1:
                 value = '后轮驱动'
             if value in self.typeList[self.DRIVE_WAY_TYPE]:

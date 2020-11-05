@@ -78,13 +78,13 @@ class CarSpider(scrapy.Spider):
         return config
 
     def getUrlList(self):
-        db = pymysql.connect("car_mysql", "root", "root", "car_spider")
+        db = pymysql.connect("172.29.0.217", "root", "root", "car_spider")
 
         # 使用 cursor() 方法创建一个游标对象 cursor
         cursor = db.cursor()
 
         # 使用 execute()  方法执行 SQL 查询
-        cursor.execute("SELECT spider_url,id FROM `car_version` WHERE param_config = '' or param_config = '[]'")
+        cursor.execute("SELECT spider_url,id FROM `car_version` WHERE param_config = '{}' or param_config = '[]' ")
 
         # 使用 fetchone() 方法获取全部数据.
         data = cursor.fetchall()

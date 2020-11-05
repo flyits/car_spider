@@ -1,22 +1,7 @@
 version: "3.7"
 
 services:
-  car_spider:
-    container_name: car_spider
-    image: car_spider-1.0
-    build: .
-    volumes:
-      - '/d/code/python/car:/workspace'
-    networks:
-      normal:
-        aliases:
-          - master
-    command:
-      - /bin/sh
-      - -c
-      - |
-          cd /workspace/car
-          python3 main.py
+
 
   car_node_chrome:
     image: selenium/node-chrome
@@ -27,23 +12,24 @@ services:
     environment:
       HUB_HOST: selenium-hub
     volumes:
-      - '/d/car/shm:/dev/shm'
+      - '/d/code/python/car/shm:/dev/shm'
 
-  car_mysql:
-    container_name: car_mysql
-    image: mysql:5.7
-    expose:
-      - 3306
-    networks:
-      normal:
-        aliases:
-          - car_mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-    volumes:
-      - '/d/code/python/car/mysql:/var/lib/mysql'
-    ports:
-      - 3307:3306
+#  car_mysql:
+#    container_name: car_mysql
+#    image: mysql:5.7
+#    expose:
+#      - 3306
+#    restart: always
+#    networks:
+#      normal: car_version
+#        aliases:
+#          - car_mysql
+#    environment:
+#      MYSQL_ROOT_PASSWORD: root
+#    volumes:
+#      - '/d/code/python/car/mysql:/var/lib/mysql'
+#    ports:
+#      - 3307:3306
 
   car_selenium_hub:
     container_name: selenium-hub
@@ -57,15 +43,32 @@ services:
     ports:
       - '32768:4444'
 
-  car_redis:
-    container_name: redis
-    image: redis
-    expose:
-      - 6379
+#  car_redis:
+#    container_name: redis
+#    image: redis
+#    expose:
+#      - 6379
+#    networks:
+#      normal:
+#        aliases:
+#          - car_redis
+  car_spider:
+    container_name: car_spider
+    image: car_spider-1.0
+    build: .
+    restart: always
+    volumes:
+      - '/d/code/python/car:/workspace'
     networks:
       normal:
         aliases:
-          - car_redis
+          - master
+    command:
+      - /bin/sh
+      - -c
+      - |
+        cd /workspace/car
+        python3 main.py
 networks:
   normal:
     driver: bridge

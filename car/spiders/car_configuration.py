@@ -10,6 +10,19 @@ from car.types import Types
 
 base_url = 'http://car.m.yiche.com'
 img_base_url = 'http://photo.m.yiche.com/car/'
+brandList = [
+    '奥迪', '阿尔法·罗密欧', '阿斯顿·马丁', '爱驰', 'ALPINA', 'ARCFOX', 'ABT', 'AC Schnitzer', 'APEX', '奔驰', '宝马', '本田', '别克', '宝骏',
+    '标致', '比亚迪', '奔腾', '保时捷', 'BEIJING汽车', '北汽新能源', '北汽威旺', '北汽幻速', '北汽昌河', '北汽制造', '铂驰', '宾利', '布加迪', '巴博斯', '长安汽车',
+    '长安欧尚', '长安凯程', '车驰汽车', 'Cupra', 'Czinger', '长安跨越', '长城', '成功汽车', '大众', '东风风行', '东风风神', '东风风度', '东风小康', '东风风光',
+    '东风', '东风·瑞泰特', '东南', '道奇', 'DS', '丰田', '福特', '菲亚特', '福迪', '法拉利', '福田', '广汽传祺', '广汽吉奥', '观致', '国能汽车', '国机智骏',
+    'GFG Style', '海马', '红旗', '华泰', '哈弗', '汉腾', '哈飞', '华普', '汇众', '黄海', '恒天', '华颂', '华凯', '华骐', '恒驰', 'Icona', '吉利',
+    '江淮', 'Jeep', '捷豹', '捷途', '江铃', '金杯', '金龙', '九龙', '金旅', '君马', '奇点汽车', '钧天汽车', '捷尼赛思', '江铃旅居车', '凯迪拉克', '克莱斯勒', '凯翼',
+    '科尼赛克', '开瑞', 'KTM', '卡威', '陆风', '雷克萨斯', '林肯', '路虎', '雷诺', '领克', '铃木', '力帆', '劳斯莱斯', '路特斯', '兰博基尼', '猎豹', '理念',
+    'Lorinser', '零跑汽车', '领途汽车', '罗夫哈特', '凌宝汽车', '雷丁', '马自达', '名爵', '玛莎拉蒂', '迈凯伦', '迈莎锐', 'Mahindra', '摩根', '纳智捷',
+    '哪吒汽车', '讴歌', '欧拉', '欧宝', '帕加尼', 'Polestar极星', '佩奇奥', '奇瑞', '起亚', '启辰', '庆铃汽车', '前途', '骐铃汽车', '日产', '荣威', '瑞麒',
+    'Rimac', '斯柯达', '斯巴鲁', 'SWM斯威汽车', '思皓', '三菱', '双环', '双龙', '上汽大通MAXUS', 'SRM鑫源', 'SSC', '思铭', '特斯拉', 'Troller',
+    'VANTAS', 'Vega Innovations', '五菱汽车', '沃尔沃', 'WEY', '五十铃', '威兹曼', '潍柴汽车', '瓦滋', '雪铁龙', '雪佛兰', '现代', '英菲尼迪', '依维柯',
+    '一汽', '野马汽车', '宇通客车', '云度', '云雀汽车', '远程汽车', '一汽解放', '众泰', '中华', '中兴', '中国重汽', ]
 
 
 class CarConfiguration(scrapy.Spider):
@@ -27,8 +40,7 @@ class CarConfiguration(scrapy.Spider):
         # urls = ['http://photo.m.yiche.com/car/120422/']
         # urls = [            'http://car.m.yiche.com/kaiyunzhaiti/m142389/peizhi?table_name=car_version&brand_id=124&brand_model_id=2137&name=2020%E6%AC%BE+%E5%B0%8F%E5%8D%A1+2.8T+%E6%89%8B%E5%8A%A8+3.7%E7%B1%B3%E5%8D%95%E6%8E%92%E6%A0%8F%E6%9D%BF%E8%BD%BB%E5%8D%A1JX1041TCA25&classify=2.8T%2F85kW+%E6%B6%A1%E8%BD%AE%E5%A2%9E%E5%8E%8B&style_year=2020']
         # 调试图片抓取，需设置callback为对应处理方法
-        # urls = [
-        #     'http://car.m.yiche.com/cc-2932/m134335/peizhi?table_name=car_version&brand_id=53&brand_model_id=1751&name=2019%E6%AC%BE+380TSI+%E5%8F%8C%E7%A6%BB%E5%90%88+%E9%AD%85%E9%A2%9C%E7%89%88+%E5%9B%BDVI&classify=2.0T%2F162kW+%E6%B6%A1%E8%BD%AE%E5%A2%9E%E5%8E%8B&style_year=2019']
+        # urls = ['http://car.m.yiche.com/x4/']
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
@@ -51,12 +63,13 @@ class CarConfiguration(scrapy.Spider):
                 # 获取该品牌 A标记 跳转地址（下级车型）
                 url = sub_brand.xpath(".//a/@href").extract_first()
                 # 返回品牌数据到 pipeline 写入数据库，返回携带新增id的item
-                yield brand_item
-                count += 1
-                # print(brand_item)
-                if url and self.black_list(url):
-                    url = base_url + url + '?brand_id=' + str(brand_item['id'])
-                    yield scrapy.Request(url=url.replace('/?', '?'), callback=self.model)
+                if brand_item['name'] in brandList:
+                    yield brand_item
+                    count += 1
+                    print(brand_item)
+                    if url and self.black_list(url):
+                        url = base_url + url + '?brand_id=' + str(brand_item['id'])
+                        yield scrapy.Request(url=url.replace('/?', '?'), callback=self.model)
         # print(count)
 
     def model(self, response):
@@ -98,7 +111,7 @@ class CarConfiguration(scrapy.Spider):
         model_item['car_type'] = car_type
         model_item['table_name'] = 'car_model'
         model_item['id'] = brand_model_id
-        # print(model_item)
+        print(model_item)
         yield model_item
         # 获取车型版本列表
         version_item = CarBrandModelVersionItem()
@@ -110,6 +123,20 @@ class CarConfiguration(scrapy.Spider):
                 classify = version_list.xpath("./span[@class='c-style-val']/text()").extract_first()
 
             if className.find('c-style-warp') != -1:
+                version_item['category_type_id'] = 0
+                version_item['energy_type_id'] = 0
+                version_item['engine_type_id'] = 0
+                version_item['gearbox_type_id'] = 0
+                version_item['drive_way_type_id'] = 0
+                version_item['official_price'] = 0
+                version_item['xb_perk_price'] = 0
+                version_item['return_points_price'] = 0
+                version_item['displacements'] = ''
+                version_item['standard_type_id'] = 0
+                version_item['horsepower'] = ''
+                version_item['param_config'] = '{}'
+                version_item['images'] = '{}'
+
                 version_item['table_name'] = 'car_version'
                 version_item['brand_id'] = brand_id
                 version_item['brand_model_id'] = brand_model_id
@@ -119,10 +146,13 @@ class CarConfiguration(scrapy.Spider):
                 version_item['classify'] = classify
                 version_item['style_year'] = version_list.xpath(
                     ".//div[@class='compare-box']/@data-year").extract_first()
-                if url and self.black_list(url):
-                    url = base_url + url + '?' + parse.urlencode(version_item)
-                    yield scrapy.Request(url=url.replace('/?', '?'),
-                                         callback=self.config)
+                version_item['spider_url'] = base_url + url
+                yield version_item
+                print(version_item)
+                # if url and self.black_list(url):
+                #     url = base_url + url + '?' + parse.urlencode(version_item)
+                #     yield scrapy.Request(url=url.replace('/?', '?'),
+                #                          callback=self.config)
 
     def config(self, response):
         version_item = CarBrandModelVersionItem()
@@ -147,55 +177,13 @@ class CarConfiguration(scrapy.Spider):
         version_item['name'] = parse.parse_qs(parse.urlparse(response.url).query)['name'][0]
         version_item['classify'] = parse.parse_qs(parse.urlparse(response.url).query)['classify'][0]
         version_item['style_year'] = parse.parse_qs(parse.urlparse(response.url).query)['style_year'][0]
-        config_item = []
-        sub_config = {}
-
-        configsLength = len(response.xpath("//tr"))
-        for i, config in enumerate(response.xpath("//tr")):
-            # 判断当前元素是否 子配置名 如：基本信息、车身尺寸等 或为
-            if config.xpath('./@id').extract_first():
-                # 判断当前子配置是否已经爬取完成，完成写入主配置
-                if sub_config:
-                    config_item.append(sub_config)
-                # 初始化子配置
-                sub_config = {'name': config.xpath('.//span/text()').extract_first(), 'sub_config': []}
-            else:
-                # 获取子配置下配置名
-                name = config.xpath('.//th/text()').extract_first()
-                value = []
-                # 检测当前元素是否为车辆颜色信息
-                if config.xpath('.//td[@class="m-car-color"]'):
-                    for color in config.xpath(".//td[@class='m-car-color']//li"):
-                        value.append(color.xpath(".//span/@style").extract_first()[-7:])
-                else:
-                    # 检测当前元素是否有多个配置值
-                    if config.xpath('.//div[@class="l"]'):
-                        for item in config.xpath('.//div[@class="l"]'):
-                            value.append(
-                                item.xpath('./i/text()').extract_first() + ' ' + item.xpath('./text()').extract_first())
-                    if len(value) == 1:
-                        value = value[0]
-                    else:
-                        value = config.xpath('.//td/text()').extract_first()
-                # print(sub_config)
-                #  写入子配置
-                sub_config['sub_config'].append({
-                    'name': name,
-                    'value': value
-                })
-                Types().getTypeId(version_item, name, value)
-            # 检测循环结束，写入主配置
-            if i + 1 == configsLength and sub_config:
-                config_item.append(sub_config)
-        if config_item:
-            version_item['param_config'] = json.dumps(config_item, ensure_ascii=False)
 
         configUrl = response.url
         carId = configUrl[configUrl.rfind('/m') + 2: configUrl.find('/peizhi')]
         images_url = img_base_url + str(carId)
         print(images_url)
         yield version_item
-
+        print(version_item)
         if images_url:
             yield scrapy.Request(url=images_url, callback=self.images,
                                  cb_kwargs={'version_id': version_item['id']})
