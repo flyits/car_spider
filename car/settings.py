@@ -8,12 +8,7 @@
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 # 原爬取PC站点需要用chromeDrive来渲染js之后才能获取元素dom
-from shutil import which
-#
-SELENIUM_DRIVER_NAME = 'chrome'
-SELENIUM_DRIVER_EXECUTABLE_PATH = which('chrome')
-SELENIUM_COMMAND_EXECUTOR = 'http://car_selenium_hub:4444/wd/hub'
-SELENIUM_DRIVER_ARGUMENTS = ['--headless']  # '--headless' if using chrome instead of firefox
+# car_mysqless' if using chrome instead of firefox
 
 BOT_NAME = 'car'
 
@@ -109,7 +104,7 @@ COOKIES_ENABLED = False
 REACTOR_THREADPOOL_MAXSIZE = 30
 
 # DB Setting
-MYSQL_HOST = '172.29.0.217'
+MYSQL_HOST = 'car_mysql'
 MYSQL_PORT = 3306
 MYSQL_DBNAME = 'car_spider'
 MYSQL_USER = 'root'

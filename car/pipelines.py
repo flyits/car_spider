@@ -7,6 +7,9 @@
 from itemadapter import ItemAdapter
 import pymysql
 from twisted.enterprise import adbapi
+from car.dataHandle.carBrand import carBrand
+from car.dataHandle.carModel import carModel
+from car.dataHandle.carVersion import carVersion
 
 
 class CarPipeline:
@@ -35,93 +38,16 @@ class CarPipeline:
         return cls(conn=conn)
 
     def process_item(self, item, spider):
-        cursor = self.conn.cursor()
         # 品牌表数据
         if item['table_name'] == 'car_brand':
-            self.car_brand(cursor=cursor, item=item)
+            carBrand().init(conn=self.conn, item=item)
         # 车系数据
         if item['table_name'] == 'car_model':
-            self.car_model(cursor=cursor, item=item)
+            carModel().init(conn=self.conn, item=item)
         # 车型数据
         if item['table_name'] == 'car_version':
-            self.car_version(cursor=cursor, item=item)
+            carVersion().init(conn=self.conn, item=item)
         return item
-
-    def car_brand(self, cursor, item):
-        cursor.execute("""SELECT id FROM car_brand WHERE `name` = '%s'""" % (item['name']))
-        id = cursor.fetchone()
-        if id is None:
-            insert_sql = """insert into car_brand(`first_letter`,`name`,`logo_url`) VALUES(%s,%s,%s) """
-            cursor.execute(insert_sql, (item['first_letter'], item['name'], item['logo_url']))
-            item['id'] = cursor.lastrowid
-            self.conn.commit()
-        else:
-            item['id'] = id['id']
-
-    def car_model(self, cursor, item):
-
-        if 'name' in item:
-            cursor.execute(
-                """SELECT id FROM car_model WHERE `name` = '%s' and `brand_id` = %s""" % (
-                    item['name'], item['brand_id']))
-            id = cursor.fetchone()
-            if id is None:
-                insert_sql = """insert into car_model(`name`,`sub_brand_name`,`brand_id`,`cover_img`) VALUES(%s,%s,%s,%s)"""
-                cursor.execute(insert_sql, (item['name'], item['sub_brand_name'], item['brand_id'], item['cover_img']))
-                item['id'] = cursor.lastrowid
-                self.conn.commit()
-            else:
-                item['id'] = id['id']
-            if 'car_price' in item:
-                sql = """UPDATE car_model SET `guid_price`=%s,`car_price`=%s,`car_type`=%s where id=%s"""
-                cursor.execute(sql, (item['guid_price'], item['car_price'], item['car_type'], item['id']))
-                self.conn.commit()
-            if 'sub_brand_name' in item:
-                sql = """UPDATE car_model SET `sub_brand_name`=%s where id=%s"""
-                cursor.execute(sql, (item['sub_brand_name'], item['id']))
-                self.conn.commit()
-
-    def car_version(self, cursor, item):
-        if 'images' in item and item['images'] != '{}':
-            sql = """UPDATE car_version SET `images`=%s where id=%s"""
-            cursor.execute(sql, (item['images'], item['id']))
-            self.conn.commit()
-        # if 'param_config' in item:
-        #     sql = """UPDATE car_version SET `param_config`=%s,`category_type_id`=%s,`energy_type_id`=%s, `engine_type_id`=%s,
-        #      `gearbox_type_id`=%s,`drive_way_type_id`=%s,`official_price`=%s, `xb_perk_price`=%s,  `return_points_price`=%s,
-        #           `displacements`=%s,`standard_type_id`=%s,  `horsepower`=%s
-        #          where id=%s"""
-        #     cursor.execute(sql, (
-        #         item['param_config'], item['category_type_id'], item['energy_type_id'], item['engine_type_id'],
-        #         item['gearbox_type_id'], item['drive_way_type_id'], item['official_price'], item['xb_perk_price'],
-        #         item['return_points_price'],
-        #         item['displacements'], item['standard_type_id'], item['horsepower'], item['id']))
-        #     self.conn.commit()
-        # if 'classify' in item:
-        #     sql = """UPDATE car_version SET `classify`=%s,`style_year`=%s where id=%s"""
-        #     cursor.execute(sql, (item['classify'], item['style_year'], item['id']))
-        if 'name' in item:
-            cursor.execute("""SELECT id FROM car_version WHERE `name` = '%s' and `brand_model_id` = %s""" % (
-                item['name'], item['brand_model_id']))
-            id = cursor.fetchone()
-            if id is None:
-                sql = """insert into car_version(`name`,`brand_id`, `brand_model_id`, `classify`, `style_year`,
-                `category_type_id`,`energy_type_id`, `engine_type_id`, `gearbox_type_id`,
-                 `drive_way_type_id`,`official_price`, `xb_perk_price`,  `return_points_price`, 
-                  `displacements`,`standard_type_id`,  `horsepower`,  `param_config`,`spider_url`,`images`
-                ) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-                cursor.execute(sql, (
-                    item['name'], item['brand_id'], item['brand_model_id'], item['classify'], item['style_year'],
-                    item['category_type_id'], item['energy_type_id'], item['engine_type_id'],
-                    item['gearbox_type_id'], item['drive_way_type_id'],
-                    item['official_price'], item['xb_perk_price'], item['return_points_price'],
-                    item['displacements'], item['standard_type_id'], item['horsepower'], item['param_config'],
-                    item['spider_url'], item['images']
-                ))
-                item['id'] = cursor.lastrowid
-                self.conn.commit()
-            else:
-                item['id'] = id['id']
 
     def handle_error(self, failure):
         # 打印错误信息

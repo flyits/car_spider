@@ -14,22 +14,22 @@ services:
     volumes:
       - '/d/code/python/car/shm:/dev/shm'
 
-#  car_mysql:
-#    container_name: car_mysql
-#    image: mysql:5.7
-#    expose:
-#      - 3306
-#    restart: always
-#    networks:
-#      normal: car_version
-#        aliases:
-#          - car_mysql
-#    environment:
-#      MYSQL_ROOT_PASSWORD: root
-#    volumes:
-#      - '/d/code/python/car/mysql:/var/lib/mysql'
-#    ports:
-#      - 3307:3306
+  car_mysql:
+    container_name: car_mysql
+    image: mysql:5.7
+    expose:
+      - 3306
+    restart: always
+    networks:
+      normal:
+        aliases:
+          - car_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - '/d/code/python/car/mysql:/var/lib/mysql'
+    ports:
+      - 3307:3306
 
   car_selenium_hub:
     container_name: selenium-hub
