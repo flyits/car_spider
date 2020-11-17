@@ -8,7 +8,12 @@
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 # 原爬取PC站点需要用chromeDrive来渲染js之后才能获取元素dom
-# car_mysqless' if using chrome instead of firefox
+from shutil import which
+#
+SELENIUM_DRIVER_NAME = 'chrome'
+SELENIUM_DRIVER_EXECUTABLE_PATH = which('chrome')
+SELENIUM_COMMAND_EXECUTOR = 'http://car_selenium_hub:4444/wd/hub'
+SELENIUM_DRIVER_ARGUMENTS = ['--headless']  # '--headless' if using chrome instead of firefox
 
 BOT_NAME = 'car'
 
