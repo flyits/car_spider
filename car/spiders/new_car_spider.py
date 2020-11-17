@@ -91,8 +91,10 @@ class CarSpider(scrapy.Spider):
         urls = []
         for url in data:
             id = url[1]
-            url = url[0][:url[0].find('?')] + '?id=' + str(id)
-
+            if url[0].find('?') != -1:
+                url = url[0][:url[0].find('?')] + '?id=' + str(id)
+            else:
+                url = url[0] + '?id=' + str(id)
             urls.append(url)
         # 关闭数据库连接
         db.close()

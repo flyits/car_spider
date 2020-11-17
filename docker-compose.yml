@@ -43,15 +43,6 @@ services:
     ports:
       - '32768:4444'
 
-#  car_redis:
-#    container_name: redis
-#    image: redis
-#    expose:
-#      - 6379
-#    networks:
-#      normal:
-#        aliases:
-#          - car_redis
   car_spider:
     container_name: car_spider
     image: car_spider-1.0
@@ -63,12 +54,11 @@ services:
       normal:
         aliases:
           - master
-    command:
-      - /bin/sh
-      - -c
-      - |
-        cd /workspace/car
-        python3 main.py
+#    command:
+#      - /bin/sh
+#      - -c
+#      - |
+#        python3 /workspace/car/igmain.py
 networks:
   normal:
     driver: bridge
